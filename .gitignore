@@ -1,0 +1,10 @@
+venv
+migrations
+__pycache__
+
+.env
+*.json
+*.sqlite3
+*.log
+*.txt
+!requirements.txt
