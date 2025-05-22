@@ -594,156 +594,7 @@ class CreateOrderPartialPaymentApiView(viewsets.GenericViewSet, CreateModelMixin
 
 class DashboardDataGenericViewset(APIView):
     permission_classes = [IsAuthenticated, SuperuserAndWarehouseManagerCanRead]
-    
-    # def get(self, request):
-    #     user = request.user
-    #     try:
-    #         # Get current year
-    #         current_year = datetime.now().year
             
-    #         # Initialize dashboard data structure
-    #         dashboard_data = {
-    #             "product_data": {},
-    #             "annual_sales": []
-    #         }
-            
-    #         # Handle product data based on user permissions
-    #         if user.is_superuser:
-    #             products_data = Product.objects.aggregate(
-    #                 all_products=Count("id"),
-    #                 low_stock_products=Count("id", filter=Q(quantity__lt=5)),
-    #                 out_of_stock_products=Count("id", filter=Q(quantity__lte=0))
-    #             )
-    #         else:
-    #             warehouse_id = user.warehouse_id
-    #             products_data = Product.objects.filter(warehouse_id=warehouse_id).aggregate(
-    #                 all_products=Count("id"),
-    #                 low_stock_products=Count("id", filter=Q(quantity__lt=5)),
-    #                 out_of_stock_products=Count("id", filter=Q(quantity__lte=0))
-    #             )
-            
-    #         dashboard_data["product_data"] = products_data
-            
-    #         # Calculate annual sales data
-    #         monthly_sales = Order.objects.filter(
-    #             created_at__year=current_year,
-    #             order_status=Order.Status.COMPLETED
-    #         ).annotate(
-    #             month=TruncMonth('created_at')
-    #         ).values('month').annotate(
-    #             number_of_completed_orders=Count('id'),
-    #             number_of_pending_orders=Count(Case(
-    #                 When(order_status=Order.Status.PENDING, then=F('id')),
-    #                 default=None,
-    #                 # output_field=models.IntegerField()
-    #             )),
-    #             month_total_sales=Sum('total_price')
-    #         ).order_by('month')
-            
-    #         # Convert monthly sales data to required format
-    #         formatted_monthly_sales = []
-    #         for sale in monthly_sales:
-    #             formatted_sale = {
-    #                 'month': sale['month'].strftime('%B'),
-    #                 'number_of_completed_orders': sale['number_of_completed_orders'],
-    #                 'number_of_pending_orders': sale['number_of_pending_orders'] or 0,
-    #                 'month_total_sales': int(sale['month_total_sales'])
-    #             }
-    #             formatted_monthly_sales.append(formatted_sale)
-            
-    #         dashboard_data["annual_sales"] = formatted_monthly_sales
-            
-    #         # Serialize and validate the data
-    #         serializer = DashboardDataSerializer(data=dashboard_data)
-    #         serializer.is_valid(raise_exception=True)
-            
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-        
-    #     except Exception as e:
-    #         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-        
-    # def get(self, request):
-    #     user = self.request.user
-    #     current_year = timezone.now().year
-
-    #     try:
-    #         if user.is_superuser:
-    #             products_data = Product.objects.aggregate(
-    #                 all_products=Count("id"),
-    #                 low_stock_products=Count("id", filter=Q(quantity__lt=5)),
-    #                 out_of_stock_products=Count("id", filter=Q(quantity__lte=0)),
-    #             )
-    #         else:
-    #             warehouse_id = user.warehouse_id
-    #             products_data = Product.objects.filter(warehouse_id=warehouse_id).aggregate(
-    #                 all_products=Count("id"),
-    #                 low_stock_products=Count("id", filter=Q(quantity__lt=5)),
-    #                 out_of_stock_products=Count("id", filter=Q(quantity__lte=0)),
-    #             )
-            
-    #         monthly_sales = Order.objects.filter(
-    #             # created_at__year=current_year,
-    #             order_status=Order.Status.COMPLETED  # Filter for completed orders
-    #         ).annotate(
-    #             month=TruncMonth('created_at', output_field=DateField())
-    #         ).values('month').annotate(
-    #             number_of_completed_orders=Count('id'),
-    #             month_total_sales=Sum('total_price')
-    #         ).order_by('month')
-
-    #         # Aggregate pending orders for the same period
-    #         monthly_pending_orders = Order.objects.filter(
-    #             # created_at__year=current_year,
-    #             order_status=Order.Status.PENDING
-    #         ).annotate(
-    #             month=TruncMonth('created_at', output_field=DateField())
-    #         ).values('month').annotate(
-    #             number_of_pending_orders=Count('id')
-    #         ).order_by('month')
-            
-    #         print(f"View monthly_pending_orders : {monthly_pending_orders}")
-    #         # Combine completed and pending order data
-    #         annual_sales_data = []
-    #         for sale in monthly_sales:
-    #             pending_order_count = next((p['number_of_pending_orders'] for p in monthly_pending_orders if p['month'] == sale['month']), 0)
-    #             annual_sales_data.append({
-    #                 "month": sale['month'].strftime("%B"),  # Format month name
-    #                 "number_of_completed_orders": sale['number_of_completed_orders'],
-    #                 "number_of_pending_orders": pending_order_count,
-    #                 "month_total_sales": sale['month_total_sales'] or 0 # Handle potential None values
-    #             })
-
-    #         # Add months with zero sales if no sales data available for them.
-    #         all_months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    #         for month_num in all_months:
-    #             month_name = timezone.datetime(current_year, month_num, 1).strftime("%B")
-    #             if not any(sale['month'] == month_name for sale in annual_sales_data):
-    #                 annual_sales_data.append({
-    #                     "month": month_name,
-    #                     "number_of_completed_orders": 0,
-    #                     "number_of_pending_orders": 0,
-    #                     "month_total_sales": 0
-    #                 })
-            
-    #         annual_sales_data.sort(key=lambda x: timezone.datetime.strptime(x['month'], "%B").month) #Order by month
-
-
-    #         dashboard_data = {
-    #             "product_data": products_data,
-    #             "annual_sales": annual_sales_data,
-    #         }
-
-    #         serializer = DashboardDataSerializer(data=dashboard_data)
-    #         serializer.is_valid(raise_exception=True)
-
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    #     except Exception as e:
-    #         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        
         
     def get(self, request):
         user = request.user
@@ -819,44 +670,6 @@ class DashboardDataGenericViewset(APIView):
             low_stock_products=Count("id", filter=Q(quantity__lt=5)),
             out_of_stock_products=Count("id", filter=Q(quantity__lte=0)),
         )
-
-    # Check thi to understand simpler logic first
-    # def _get_annual_sales_data(self, user):
-    #     """Helper method to fetch annual sales data."""
-    #     current_year = timezone.now().year
-    #     monthly_sales = []
-
-    #     for month in range(1, 13):  # Iterate from January (1) to December (12)
-    #         # Calculate the start and end of the month
-    #         start_date = timezone.make_aware(datetime(current_year, month, 1))
-    #         if month == 12:
-    #             end_date = timezone.make_aware(datetime(current_year + 1, 1, 1))
-    #         else:
-    #             end_date = timezone.make_aware(datetime(current_year, month + 1, 1))
-
-    #         # Filter orders for the current month
-    #         filters = Q(created_at__gte=start_date, created_at__lt=end_date)
-    #         if not user.is_superuser:
-    #             filters &= Q(warehouse_id=user.warehouse_id)
-
-    #         orders = Order.objects.filter(filters)
-
-    #         # Aggregate data for the month
-    #         monthly_data = orders.aggregate(
-    #             number_of_completed_orders=Count("id", filter=Q(order_status="completed")),
-    #             number_of_pending_orders=Count("id", filter=Q(order_status="pending")),
-    #             month_total_sales=Sum("total_price", filter=Q(order_status="completed")),
-    #         )
-
-    #         # Append monthly data to the result
-    #         monthly_sales.append({
-    #             "month": start_date.strftime("%B"),  # Full month name (e.g., "January")
-    #             "number_of_completed_orders": monthly_data["number_of_completed_orders"] or 0,
-    #             "number_of_pending_orders": monthly_data["number_of_pending_orders"] or 0,
-    #             "month_total_sales": monthly_data["month_total_sales"] or 0,
-    #         })
-
-    #     return monthly_sales
         
 
     def _get_annual_sales_data(self, user, warehouse_id=None):
@@ -916,3 +729,6 @@ class DashboardDataGenericViewset(APIView):
             })
 
         return annual_sales
+
+
+
