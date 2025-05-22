@@ -93,7 +93,7 @@ class PasswordResetView(APIView):
             token = default_token_generator.make_token(user)
             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
             # Construct the reset link. Be sure to configure your frontend URL.
-            reset_link = f"{settings.FRONTEND_URL}authentication/password-reset?uid={uidb64}&token={token}"  # Use settings
+            reset_link = f"{settings.FRONTEND_URL}/authentication/password-reset?uid={uidb64}&token={token}"  # Use settings
 
             try:
                 send_mail(
